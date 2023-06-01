@@ -46,18 +46,17 @@ public class MainActivity extends AppCompatActivity implements DrivingSession.Dr
     private ActivityMainBinding binding;
     private Point ROUTE_START_LOCATION;
     private final Point ROUTE_END_LOCATION = new Point(55.79402, 37.69978);
-
+    private final String TAG = MainActivity.class.getSimpleName();
     private Point myloc;
     private Point SCREEN_CENTER;
     private MapView mapView;
     private MapObjectCollection mapObjects;
     private DrivingRouter drivingRouter;
-    private DrivingSession drivingSession;
     private LocationManager locationManager;
     private LocationListener myLocationListener;
     private boolean upd = true;
     private boolean isWork = false;
-    private int[] colors = {0xFFFF0000, 0xFF00FF00, 0x00FFBBBB, 0xFF0000FF};
+    private final int[] colors = {0xFFFF0000, 0xFF00FF00, 0x00FFBBBB, 0xFF0000FF};
 
 
 
@@ -88,19 +87,19 @@ public class MainActivity extends AppCompatActivity implements DrivingSession.Dr
                             android.Manifest.permission.ACCESS_FINE_LOCATION
                     }, 1);
         }
-        Log.d("SSS",String.valueOf(isWork));
+
         if (isWork){
             locationManager = MapKitFactory.getInstance().createLocationManager();
             myLocationListener = new LocationListener() {
                 @Override
-                public void onLocationUpdated(Location location) {
+                public void onLocationUpdated(@NonNull Location location) {
                     if(upd) {
                         myloc = location.getPosition();
                         ROUTE_START_LOCATION = new Point(myloc.getLatitude(), myloc.getLongitude());
-                        Log.d("LOC", String.valueOf(myloc.getLatitude()));
-                        SCREEN_CENTER = new Point((ROUTE_START_LOCATION.getLatitude() + ROUTE_END_LOCATION.getLatitude()) / 2, (ROUTE_START_LOCATION.getLongitude() + ROUTE_END_LOCATION.getLongitude()) / 2);
+                        SCREEN_CENTER = new Point(
+                                (ROUTE_START_LOCATION.getLatitude() + ROUTE_END_LOCATION.getLatitude()) / 2,
+                                (ROUTE_START_LOCATION.getLongitude() + ROUTE_END_LOCATION.getLongitude()) / 2);
                         mapView.getMap().move(new CameraPosition(SCREEN_CENTER, 8, 0, 0));
-                        Log.w("AAA", "RRR");
 
                         drivingRouter = DirectionsFactory.getInstance().createDrivingRouter();
                         mapObjects = mapView.getMap().getMapObjects().addCollection();
@@ -111,21 +110,17 @@ public class MainActivity extends AppCompatActivity implements DrivingSession.Dr
                 }
 
                 @Override
-                public void onLocationStatusUpdated(LocationStatus locationStatus) {
+                public void onLocationStatusUpdated(@NonNull LocationStatus locationStatus) {
                 }
             };
         }
 
         PlacemarkMapObject marker = mapView.getMap().getMapObjects().addPlacemark(
                 ROUTE_END_LOCATION, ImageProvider.fromResource(this, R.drawable.mirea_logo));
-        marker.addTapListener(new MapObjectTapListener() {
-            @Override
-            public boolean onMapObjectTap(@NonNull MapObject mapObject, @NonNull Point
-                    point) {
-                Toast.makeText(getApplication(),"Marker click",
-                        Toast.LENGTH_SHORT).show();
-                return false;
-            }
+        marker.addTapListener((mapObject, point) -> {
+            Toast.makeText(getApplication(),"Marker click",
+                    Toast.LENGTH_SHORT).show();
+            return false;
         });
     }
 
@@ -153,18 +148,13 @@ public class MainActivity extends AppCompatActivity implements DrivingSession.Dr
 
     private void submitRequest() {
         DrivingOptions drivingOptions = new DrivingOptions();
-        VehicleOptions vehicleOptions = new VehicleOptions();
 
         drivingOptions.setRoutesCount(2);
         ArrayList<RequestPoint> requestPoints = new ArrayList<>();
         requestPoints.add(new RequestPoint(ROUTE_START_LOCATION,
-                RequestPointType.WAYPOINT,
-                null));
+                RequestPointType.WAYPOINT, null));
         requestPoints.add(new RequestPoint(ROUTE_END_LOCATION,
-                RequestPointType.WAYPOINT,
-                null));
-        drivingSession = drivingRouter.requestRoutes(requestPoints, drivingOptions,
-                vehicleOptions, this);
+                RequestPointType.WAYPOINT, null));
     }
 
 
